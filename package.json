@@ -1,6 +1,6 @@
 {
   "name": "zodson",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Helper functions to sync zod validation schemas with Bson",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
