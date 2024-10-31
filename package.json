@@ -2,9 +2,11 @@
   "name": "zodson",
   "version": "1.0.0",
   "description": "Helper functions to sync zod validation schemas with Bson",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -26,6 +28,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^22.8.5"
+    "@types/node": "^22.8.5",
+    "typescript": "^5.6.3"
   }
 }

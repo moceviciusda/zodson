@@ -13,13 +13,13 @@ import {
 const objectIdPattern = '^[0-9a-fA-F]{24}$';
 export const zodObjectId = z.string().regex(new RegExp(objectIdPattern));
 
-const zodToBsonSchema = (zodSchema: z.ZodTypeAny): TMongoSchema => {
+const zodToBson = (zodSchema: z.ZodTypeAny): TMongoSchema => {
   // NOTE: Unwrap optional and nullable field effect to get underlying schema
   if (zodSchema instanceof z.ZodOptional) {
-    return zodToBsonSchema(zodSchema.unwrap());
+    return zodToBson(zodSchema.unwrap());
   }
   if (zodSchema instanceof z.ZodNullable) {
-    return zodToBsonSchema(zodSchema.unwrap());
+    return zodToBson(zodSchema.unwrap());
   }
 
   // NOTE: Handle objects
@@ -29,7 +29,7 @@ const zodToBsonSchema = (zodSchema: z.ZodTypeAny): TMongoSchema => {
     const required: string[] = [];
 
     for (const [key, value] of Object.entries(shape)) {
-      properties[key] = zodToBsonSchema(value as z.ZodTypeAny);
+      properties[key] = zodToBson(value as z.ZodTypeAny);
       if (!(value instanceof z.ZodOptional)) {
         required.push(key);
       }
@@ -46,7 +46,7 @@ const zodToBsonSchema = (zodSchema: z.ZodTypeAny): TMongoSchema => {
   if (zodSchema instanceof z.ZodArray) {
     const arraySchema: TMongoSchemaArray = {
       bsonType: 'array',
-      items: zodToBsonSchema(zodSchema.element),
+      items: zodToBson(zodSchema.element),
     };
 
     if (zodSchema._def.minLength !== null) {
@@ -161,11 +161,11 @@ const zodToBsonSchema = (zodSchema: z.ZodTypeAny): TMongoSchema => {
 
 const createMongoValidator = (zodSchema: z.ZodTypeAny) => {
   return {
-    $jsonSchema: zodToBsonSchema(zodSchema),
+    $jsonSchema: zodToBson(zodSchema),
   };
 };
 
-const mongoSchemaToZod = (mongoSchema: TMongoSchema): z.ZodTypeAny => {
+const bsonToZod = (mongoSchema: TMongoSchema): z.ZodTypeAny => {
   if (mongoSchema.bsonType === 'array') {
     let elementSchema;
 
@@ -173,16 +173,16 @@ const mongoSchemaToZod = (mongoSchema: TMongoSchema): z.ZodTypeAny => {
     if (Array.isArray(mongoSchema.items)) {
       elementSchema =
         mongoSchema.items.length === 1
-          ? mongoSchemaToZod(mongoSchema.items[0])
+          ? bsonToZod(mongoSchema.items[0])
           : z.union(
-              mongoSchema.items.map(mongoSchemaToZod) as [
+              mongoSchema.items.map(bsonToZod) as [
                 z.ZodTypeAny,
                 z.ZodTypeAny,
                 ...z.ZodTypeAny[]
               ]
             );
     } else {
-      elementSchema = mongoSchemaToZod(mongoSchema.items);
+      elementSchema = bsonToZod(mongoSchema.items);
     }
 
     const constraints = {
@@ -215,7 +215,7 @@ const mongoSchemaToZod = (mongoSchema: TMongoSchema): z.ZodTypeAny => {
     const required = new Set(mongoSchema.required || []);
 
     for (const [key, value] of Object.entries(mongoSchema.properties)) {
-      const fieldSchema = mongoSchemaToZod(value);
+      const fieldSchema = bsonToZod(value);
       shape[key] = required.has(key) ? fieldSchema : fieldSchema.optional();
     }
 
@@ -323,4 +323,8 @@ const mongoSchemaToZod = (mongoSchema: TMongoSchema): z.ZodTypeAny => {
   throw new Error(`Unsupported BSON type: ${mongoSchema.bsonType}`);
 };
 
-export { zodToBsonSchema, createMongoValidator, mongoSchemaToZod };
+export {
+  zodToBson as zodToBsonSchema,
+  createMongoValidator,
+  bsonToZod as mongoSchemaToZod,
+};
