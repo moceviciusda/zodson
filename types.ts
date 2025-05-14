@@ -25,7 +25,13 @@ export type TMongoSchema =
   | TMongoSchemaString
   | TMongoSchemaUUID
   | TMongoSchemaBinData
-  | TMongoSchemaDate;
+  | TMongoSchemaDate
+  | TMongoSchemaNull
+  | TMongoSchemaOneOf;
+
+export type TMongoSchemaOneOf = {
+  oneOf: TMongoSchema[];
+};
 
 export type TMongoSchemaBase = {
   bsonType: TBsonTypes;
@@ -89,4 +95,8 @@ export type TMongoSchemaBinData = TMongoSchemaBase & {
 
 export type TMongoSchemaDate = TMongoSchemaBase & {
   bsonType: 'date';
+};
+
+export type TMongoSchemaNull = TMongoSchemaBase & {
+  bsonType: 'null';
 };
