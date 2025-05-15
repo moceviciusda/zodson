@@ -1,7 +1,7 @@
 {
   "name": "zodson",
-  "version": "0.0.1",
-  "description": "Helper functions to sync zod validation schemas with Bson",
+  "version": "1.0.0",
+  "description": "Helper functions to sync zod validation schemas with MongoDB Bson types.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
